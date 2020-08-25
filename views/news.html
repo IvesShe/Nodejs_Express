@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/css/base.css">
+</head>
+<body>
+    <h2>新聞頁面</h2>
+    <h2>綁定數據</h2>
+
+    <p><%=userinfo.username%>---<%=userinfo.age%></p>
+
+    <p><%-article%></p>
+
+    <h2>條件判斷</h2>
+
+    <%if(flag==true){%>
+        <strong>flag=true</strong>
+    <%}%>
+
+    <%if(score>=60){%>
+        <p>及格</p>
+    <%}else{%>
+        <p>不及格</p>
+    <%}%>
+
+    <ul>
+        <%for(var i=0; i<list.length; i++){%>
+            <li><%=list[i]%></li>
+        <%}%>
+    </ul>
+
+    <ul>
+        <%for(var i=0; i<newList.length; i++){%>
+            <li><%=newList[i].title%></li>
+        <%}%>
+    </ul>
+
+    <%- include('footer.html') %>
+</body>
+</html>
