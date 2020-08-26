@@ -1,9 +1,25 @@
 // 引入
 const express = require('express');
 const app = express();
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const session = require("express-session");
+const MongoStore = require("connect-mongo")(session);
 
-// 配置模板引擎(html)
-const ejs = require("ejs")
+// 另外有connect-redis、connect-mysql
+
+// 引入外部模塊
+//const login = require("./routes/login")
+//const user = require("./routes/admin/user")
+const admin = require("./routes/admin")
+const index = require("./routes/index")
+const api = require("./routes/api")
+
+
+
+
+// 配置模板引擎(html) 
+const ejs = require("ejs") 
 app.engine("html",ejs.__express);
 app.set("view engine", "html");
 
@@ -16,47 +32,84 @@ app.use((req,res,next)=>{
     next();
 })
 
+// 配置第三方中間件
+app.use(bodyParser.urlencoded({extended:false}));
+app.use(bodyParser.json());
+
+// 配置cookieParser中間件，中間是密碼
+app.use(cookieParser("ivesshe104"));
+
+// 配置session的中間件
+app.use(session({
+    secret:"secret ivesshe",    // 服務器端生成session的簽名
+    name:"ivesshe888",          // 修改session對應cookie的名稱
+    resave:false,               // 強制保存session即使它並沒有變化
+    saveUninitialized:true,     // 強制將未初始化的session存儲
+    cookie:{
+        maxAge:1000*60*30,
+        secure:false             // true表示只有https協議才能訪問cookie
+    },
+    rolling:true,                // 在每次請求時強行設置cookie，這將重置cookie過渡時間(默認:false)
+
+    // 使用 connect-mongo
+    // store: new MongoStore({
+    //     //url: 'mongodb://user12345:foobar@localhost/test-app?authSource=admins&w=1',
+    //     url: 'mongodb://127.0.0.1:27017/shop',
+    //     //不管發出多少請求，在24小時內只更新一次session, 除非改變了這個session
+    //     touchAfter: 24*3600 
+    //     //mongoOptions: advancedOptions // See below for details
+    // })
+}))
+
+// app.use(session({
+//     secret:"keyboard cat",
+//     resave:false,
+//     saveUninitialized:true,
+//     cookie:{secure:true}
+// }))
+
+
 // 配置靜態web目錄
 // 內置中間件
 app.use(express.static("static"));
 
+// 掛載login模塊
+//app.use("/login",login);
+
+// 掛載user模塊
+//app.use("/user",user);
+
+// 配置外部路由模塊
+app.use("/admin",admin);
+app.use("/api",api);
+app.use("/",index);
+
 // 配置路由
-app.get("/",(req,res)=>{
-    console.log("您好 Express");
-    //res.send("您好 Express");
-    let title = "您好 ejs"
-    res.render("index",{
-        title: title
-    });
+
+
+app.get("/article",(req,res)=>{    
+    let username = req.cookies.username;
+    console.log("新聞頁面--"+username);
+    res.send("新聞頁面--"+username);
 })
 
-app.get("/login",(req,res)=>{
-    console.log("新聞頁面");
-    res.render("login",{})    
+app.get("/product",(req,res)=>{    
+    // 獲取加密的cookie
+    let username = req.signedCookies.username;
+    console.log("product--"+username);
+    res.send("product--"+username);
 })
 
-app.post("/doLogin",(req,res)=>{
-    res.send("執行提交");
-})
+// app.get("/login",(req,res)=>{
+//     console.log("登錄");
+//     res.send("登錄");
+// })
 
-app.get("/article",(req,res)=>{
-    console.log("新聞頁面");
-    res.send("新聞頁面");
-})
 
-app.get("/login",(req,res)=>{
-    console.log("登錄");
-    res.send("登錄");
-})
 
 app.get("/register",(req,res)=>{
     console.log("注冊頁面");
     res.send("注冊頁面");
-})
-
-app.post("/doLogin",(req,res)=>{
-    console.log("執行登錄")
-    res.send("執行登錄");
 })
 
 app.put("/editUser",(req,res)=>{    // put：主要用於修改數據
